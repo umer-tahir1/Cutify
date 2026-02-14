@@ -1,15 +1,28 @@
 import React, { useState, useRef, useEffect, memo } from 'react';
+import { resolveAssetUrl } from '../utils/assetUrl';
 
 // ── Build a resize URL through the backend /assets/resize endpoint ──
+// On static deployments (production), skip resize and use the raw image.
+const isStaticDeploy = !import.meta.env.DEV;
+
 function getResizedUrl(src: string, width: number, quality = 75): string {
   // Only process /assets/ URLs (our local product/category images)
-  if (!src || !src.startsWith('/assets/')) return src;
+  if (!src || !src.includes('/assets/')) return resolveAssetUrl(src);
+  if (isStaticDeploy) {
+    // No backend resize endpoint on GitHub Pages — serve the raw image
+    return resolveAssetUrl(src);
+  }
   return `/assets/resize?src=${encodeURIComponent(src)}&w=${width}&q=${quality}`;
 }
 
 // ── Generate srcSet for responsive images ──
 function buildSrcSet(src: string, widths: number[], quality = 75): string {
-  if (!src || !src.startsWith('/assets/')) return '';
+  if (!src || !src.includes('/assets/')) return '';
+  if (isStaticDeploy) {
+    // On static deploy, all sizes point to the same raw image
+    const resolved = resolveAssetUrl(src);
+    return widths.map(w => `${resolved} ${w}w`).join(', ');
+  }
   return widths.map(w => `${getResizedUrl(src, w, quality)} ${w}w`).join(', ');
 }
 
@@ -86,12 +99,12 @@ const OptimizedImageInner: React.FC<OptimizedImageProps> = ({
     return () => observer.disconnect();
   }, [priority, inView]);
 
-  const isLocal = src?.startsWith('/assets/');
+  const isLocal = src?.includes('/assets/');
   const srcSet = isLocal && inView ? buildSrcSet(src, srcSetWidths, quality) : undefined;
   // For local images, serve the smallest reasonable size as the default src
   const optimizedSrc = isLocal && inView
     ? getResizedUrl(src, srcSetWidths[srcSetWidths.length - 1] || 800, quality)
-    : (inView ? src : undefined);
+    : (inView ? resolveAssetUrl(src) : undefined);
 
   const handleLoad = () => {
     setLoaded(true);
@@ -124,7 +137,7 @@ const OptimizedImageInner: React.FC<OptimizedImageProps> = ({
       {/* Actual image — only render when in view */}
       {inView && (
         <img
-          src={error ? src : optimizedSrc}
+          src={error ? resolveAssetUrl(src) : optimizedSrc}
           srcSet={error ? undefined : srcSet}
           sizes={error ? undefined : (isLocal ? sizes : undefined)}
           alt={alt}

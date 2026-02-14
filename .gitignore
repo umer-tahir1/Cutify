@@ -4,6 +4,10 @@ node_modules/
 # Build output
 dist/
 
+# Generated static files (regenerated during build)
+public/assets/
+public/api/
+
 # Environment
 .env
 .env.local

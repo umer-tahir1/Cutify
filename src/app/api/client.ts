@@ -1,5 +1,12 @@
 // Cutify API Client
-// Base configuration for making API calls from the frontend
+// Uses static JSON data on production (GitHub Pages), or live API in dev mode.
+
+// In production builds (GitHub Pages), use static JSON data.
+// In dev mode, use live API with backend proxy.
+const isStaticDeploy = !import.meta.env.DEV;
+
+// Re-export from static client for static deployments
+import { api as staticApi } from './static-client';
 
 const API_BASE = '/api';
 
@@ -341,5 +348,7 @@ class ApiClient {
   }
 }
 
-export const api = new ApiClient(API_BASE);
+// Use static client for GitHub Pages (no backend), otherwise use live API client
+const liveApi = new ApiClient(API_BASE);
+export const api = isStaticDeploy ? staticApi : liveApi;
 export default api;
