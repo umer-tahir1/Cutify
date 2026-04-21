@@ -1,0 +1,47 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cutify-backend",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-20",
+  "compatibility_flags": ["nodejs_compat_v2"],
+  "workers_dev": true,
+
+  "containers": [
+    {
+      "name": "cutify-api",
+      "class_name": "CutifyApiContainer",
+      "image": "../../server/Dockerfile.cloudflare",
+      "image_build_context": "../..",
+      "instance_type": "basic",
+      "max_instances": 4
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CUTIFY_API_CONTAINER",
+        "class_name": "CutifyApiContainer"
+      }
+    ]
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["CutifyApiContainer"]
+    }
+  ],
+
+  "vars": {
+    "FRONTEND_URL": "https://cutify.pages.dev",
+    "JWT_EXPIRES_IN": "7d",
+    "JWT_REFRESH_EXPIRES_IN": "30d",
+    "SMTP_HOST": "smtp.gmail.com",
+    "SMTP_PORT": "587",
+    "EMAIL_FROM": "Cutify <noreply@cutify.com>",
+    "MAX_FILE_SIZE": "5242880",
+    "UPLOAD_DIR": "uploads",
+    "WHATSAPP_BUSINESS_PHONE": "+923306387976"
+  }
+}

@@ -1,0 +1,10 @@
+export * as authController from './authController';
+export * as userController from './userController';
+export * as productController from './productController';
+export * as categoryController from './categoryController';
+export * as cartController from './cartController';
+export * as wishlistController from './wishlistController';
+export * as orderController from './orderController';
+export * as couponController from './couponController';
+export * as reviewController from './reviewController';
+export * as adminController from './adminController';
